@@ -123,6 +123,13 @@ public class RateLimit
         }
     }
 
+    public static func resetRateLimitForKey(key: String)
+    {
+        dispatch_sync(debounceQueue) {
+            self.rateLimitDictionary[key] = nil
+        }
+    }
+
     private static func rateLimitInfoForKey(key: String) -> RateLimitInfo?
     {
         var rateLimitInfo: RateLimitInfo?
