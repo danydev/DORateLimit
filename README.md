@@ -12,11 +12,11 @@ A good explanation about the differences between debouncing and throttling can b
 
 ``` swift
 RateLimit.throttle("throttleFunctionKey", threshold: 1.0) {
-    print("triggered throttle with trailing true")
+    print("triggering throttled closure")
 }
     
 RateLimit.debounce("debounceFunctionKey", threshold: 1.0) {
-    print("triggered throttle with trailing true")
+    print("triggering debounced closure")
 }
 ```
 
