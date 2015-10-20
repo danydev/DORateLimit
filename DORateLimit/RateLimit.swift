@@ -85,10 +85,10 @@ public class RateLimit
     /**
     Throttle call to a closure using a given threshold
 
-    :param: name
-    :param: threshold
-    :param: trailing
-    :param: closure
+    - parameter name:
+    - parameter threshold:
+    - parameter trailing:
+    - parameter closure:
     */
     public static func throttle(key: String, threshold: NSTimeInterval, trailing: Bool = false, closure: ()->())
     {
@@ -125,16 +125,15 @@ public class RateLimit
     }
 
     /**
-    Debounce call to a closue using a given threshold
+    Debounce call to a closure using a given threshold
 
-    :param: key
-    :param: threshold
-    :param: atBegin
-    :param: closure
+    - parameter key:
+    - parameter threshold:
+    - parameter atBegin:
+    - parameter closure:
     */
     public static func debounce(key: String, threshold: NSTimeInterval, atBegin: Bool = true, closure: ()->())
     {
-        let now = NSDate()
         var canExecuteClosure = false
         if let rateLimitInfo = self.rateLimitInfoForKey2(key) {
             if let timer = rateLimitInfo.timer where timer.valid {
@@ -158,7 +157,7 @@ public class RateLimit
             }
         }
         if canExecuteClosure {
-            //NSLog("OK")
+            NSLog("OK")
             let debounceInfo = DebounceInfo(key: key, threshold: threshold, atBegin: atBegin, closure: closure)
             // TODO: use constant for "rateLimitInfo"
             let timer = NSTimer.scheduledTimerWithTimeInterval(threshold, target: self, selector: "throttleTimerFired2:", userInfo: ["rateLimitInfo" : debounceInfo], repeats: false)
