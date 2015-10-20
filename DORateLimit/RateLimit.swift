@@ -144,7 +144,14 @@ public class RateLimit
                 self.setRateLimitInfoForKey2(RateLimitInfo2(timer: timer, debounceInfo: debounceInfo), forKey: key)
 
             } else {
-                canExecuteClosure = true
+                if (atBegin) {
+                    canExecuteClosure = true
+                } else {
+                    let debounceInfo = DebounceInfo(key: key, threshold: threshold, atBegin: atBegin, closure: closure)
+                    // TODO: use constant for "rateLimitInfo"
+                    let timer = NSTimer.scheduledTimerWithTimeInterval(threshold, target: self, selector: "throttleTimerFired2:", userInfo: ["rateLimitInfo" : debounceInfo], repeats: false)
+                    self.setRateLimitInfoForKey2(RateLimitInfo2(timer: timer, debounceInfo: debounceInfo), forKey: key)
+                }
             }
         } else {
             if (atBegin) {
@@ -157,7 +164,6 @@ public class RateLimit
             }
         }
         if canExecuteClosure {
-            NSLog("OK")
             let debounceInfo = DebounceInfo(key: key, threshold: threshold, atBegin: atBegin, closure: closure)
             // TODO: use constant for "rateLimitInfo"
             let timer = NSTimer.scheduledTimerWithTimeInterval(threshold, target: self, selector: "throttleTimerFired2:", userInfo: ["rateLimitInfo" : debounceInfo], repeats: false)
