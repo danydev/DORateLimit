@@ -287,5 +287,4 @@ class RateLimitTests: XCTestCase {
         // Expectation: Closure should have been called 1 time each
         XCTAssertEqual(2, closureCallsCount)
     }
-    
 }
