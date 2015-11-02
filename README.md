@@ -1,9 +1,9 @@
 # DORateLimit
 
-[![CI Status](http://img.shields.io/travis/danydev/DORateLimit.svg?style=flat)](https://travis-ci.org/danydev/RateLimit)
-[![Version](https://img.shields.io/cocoapods/v/RateLimit.svg?style=flat)](http://cocoapods.org/pods/RateLimit)
-[![License](https://img.shields.io/cocoapods/l/RateLimit.svg?style=flat)](http://cocoapods.org/pods/RateLimit)
-[![Platform](https://img.shields.io/cocoapods/p/RateLimit.svg?style=flat)](http://cocoapods.org/pods/RateLimit)
+[![CI Status](http://img.shields.io/travis/danydev/DORateLimit.svg?style=flat)](https://travis-ci.org/danydev/DORateLimit)
+[![Version](https://img.shields.io/cocoapods/v/DORateLimit.svg?style=flat)](http://cocoapods.org/pods/DORateLimit)
+[![License](https://img.shields.io/cocoapods/l/DORateLimit.svg?style=flat)](http://cocoapods.org/pods/DORateLimit)
+[![Platform](https://img.shields.io/cocoapods/p/DORateLimit.svg?style=flat)](http://cocoapods.org/pods/DORateLimit)
 
 DORateLimit allows you to rate limit your function calls both by using throttling and debouncing.
 A good explanation about the differences between debouncing and throttling can be found [here](http://benalman.com/projects/jquery-throttle-debounce-plugin/).
