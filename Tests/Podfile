@@ -1,0 +1,17 @@
+source 'https://github.com/CocoaPods/Specs'
+
+use_frameworks!
+
+xcodeproj 'RateLimit Tests'
+workspace '../RateLimit'
+inhibit_all_warnings!
+
+def import_pods
+  pod 'DORateLimit', :path => '../'
+end
+
+target :ios do
+  platform :ios, '8.0'
+  link_with 'RateLimit Tests'
+  import_pods
+end

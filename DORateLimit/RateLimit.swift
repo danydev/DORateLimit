@@ -97,7 +97,6 @@ public class RateLimit
         if let rateLimitInfo = self.rateLimitInfoForKey(key) {
             let timeDifference = rateLimitInfo.lastExecutionDate.timeIntervalSinceDate(now)
             if timeDifference < 0 && fabs(timeDifference) < threshold {
-                //NSLog("discarded (timeDifference: \(timeDifference) - threshold: \(threshold)")
                 if trailing && rateLimitInfo.timer == nil {
                     let timer = NSTimer.scheduledTimerWithTimeInterval(threshold, target: self, selector: "throttleTimerFired:", userInfo: ["rateLimitInfo" : rateLimitInfo], repeats: false)
                     let throttleInfo = ThrottleInfo(key: key, threshold: threshold, trailing: trailing, closure: closure)
@@ -110,7 +109,6 @@ public class RateLimit
             canExecuteClosure = true
         }
         if canExecuteClosure {
-            //NSLog("OK")
             let throttleInfo = ThrottleInfo(key: key, threshold: threshold, trailing: trailing, closure: closure)
             self.setRateLimitInfoForKey(RateLimitInfo(lastExecutionDate: now, timer: nil, throttleInfo: throttleInfo), forKey: key)
             closure()
@@ -120,8 +118,9 @@ public class RateLimit
     @objc private static func throttleTimerFired(timer: NSTimer)
     {
         // TODO: use constant for "rateLimitInfo"
-        let id = timer.userInfo!["rateLimitInfo"] as! RateLimitInfo
-        self.throttle(id.throttleInfo.key, threshold: id.throttleInfo.threshold, trailing: id.throttleInfo.trailing, closure: id.throttleInfo.closure)
+        if let userInfo = timer.userInfo as? [String : AnyObject], rateLimitInfo = userInfo["rateLimitInfo"] as? RateLimitInfo {
+            self.throttle(rateLimitInfo.throttleInfo.key, threshold: rateLimitInfo.throttleInfo.threshold, trailing: rateLimitInfo.throttleInfo.trailing, closure: rateLimitInfo.throttleInfo.closure)
+        }
     }
 
     /**
@@ -176,9 +175,8 @@ public class RateLimit
     @objc private static func throttleTimerFired2(timer: NSTimer)
     {
         // TODO: use constant for "rateLimitInfo"
-        let id = timer.userInfo!["rateLimitInfo"] as! DebounceInfo
-        if (!id.atBegin) {
-            id.closure()
+        if let userInfo = timer.userInfo as? [String : AnyObject], debounceInfo = userInfo["rateLimitInfo"] as? DebounceInfo where !debounceInfo.atBegin  {
+            debounceInfo.closure()
         }
     }
 
