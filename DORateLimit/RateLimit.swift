@@ -8,36 +8,7 @@
 
 import Foundation
 
-// TODO: Merge RateLimitInfo with RateLimitInfo2
-class RateLimitInfo: NSObject {
-    let lastExecutionDate: NSDate
-    let timer: NSTimer?
-    let throttleInfo: ThrottleInfo
-
-    init(lastExecutionDate: NSDate, timer: NSTimer? = nil, throttleInfo: ThrottleInfo)
-    {
-        self.lastExecutionDate = lastExecutionDate
-        self.timer = timer
-        self.throttleInfo = throttleInfo
-        super.init()
-    }
-}
-
-// TODO: Rename class
-class RateLimitInfo2: NSObject {
-    let timer: NSTimer?
-    let debounceInfo: DebounceInfo
-
-    init(timer: NSTimer? = nil, debounceInfo: DebounceInfo)
-    {
-        self.timer = timer
-        self.debounceInfo = debounceInfo
-        super.init()
-    }
-}
-
-// TODO: Merge ThrottleInfo with DebounceInfo
-class ThrottleInfo: NSObject {
+class ThrottleInfo {
     let key: String
     let threshold: NSTimeInterval
     let trailing: Bool
@@ -49,12 +20,23 @@ class ThrottleInfo: NSObject {
         self.threshold = threshold
         self.trailing = trailing
         self.closure = closure
-        super.init()
     }
 }
 
-// TODO: Merge ThrottleInfo with DebounceInfo
-class DebounceInfo: NSObject {
+class ThrottleExecutionInfo {
+    let lastExecutionDate: NSDate
+    let timer: NSTimer?
+    let throttleInfo: ThrottleInfo
+
+    init(lastExecutionDate: NSDate, timer: NSTimer? = nil, throttleInfo: ThrottleInfo)
+    {
+        self.lastExecutionDate = lastExecutionDate
+        self.timer = timer
+        self.throttleInfo = throttleInfo
+    }
+}
+
+class DebounceInfo {
     let key: String
     let threshold: NSTimeInterval
     let atBegin: Bool
@@ -66,21 +48,29 @@ class DebounceInfo: NSObject {
         self.threshold = threshold
         self.atBegin = atBegin
         self.closure = closure
-        super.init()
+    }
+}
+
+class DebounceExecutionInfo {
+    let timer: NSTimer?
+    let debounceInfo: DebounceInfo
+
+    init(timer: NSTimer? = nil, debounceInfo: DebounceInfo)
+    {
+        self.timer = timer
+        self.debounceInfo = debounceInfo
     }
 }
 
 /**
-*    Provide debounce and throttle functionality.
+    Provide debounce and throttle functionality.
 */
 public class RateLimit
 {
-    // TODO: Rename queue with a generic name
-    private static let debounceQueue = dispatch_queue_create("org.orru.RateLimit", DISPATCH_QUEUE_SERIAL)
+    private static let queue = dispatch_queue_create("org.orru.RateLimit", DISPATCH_QUEUE_SERIAL)
 
-    // TODO: merge rateLimitDictionary with rateLimitDictionary2
-    private static var rateLimitDictionary = [String : RateLimitInfo]()
-    private static var rateLimitDictionary2 = [String : RateLimitInfo2]()
+    private static var throttleExecutionDictionary = [String : ThrottleExecutionInfo]()
+    private static var debounceExecutionDictionary = [String : DebounceExecutionInfo]()
 
     /**
     Throttle call to a closure using a given threshold
@@ -94,13 +84,13 @@ public class RateLimit
     {
         let now = NSDate()
         var canExecuteClosure = false
-        if let rateLimitInfo = self.rateLimitInfoForKey(key) {
+        if let rateLimitInfo = self.throttleInfoForKey(key) {
             let timeDifference = rateLimitInfo.lastExecutionDate.timeIntervalSinceDate(now)
             if timeDifference < 0 && fabs(timeDifference) < threshold {
                 if trailing && rateLimitInfo.timer == nil {
                     let timer = NSTimer.scheduledTimerWithTimeInterval(threshold, target: self, selector: #selector(RateLimit.throttleTimerFired(_:)), userInfo: ["rateLimitInfo" : rateLimitInfo], repeats: false)
                     let throttleInfo = ThrottleInfo(key: key, threshold: threshold, trailing: trailing, closure: closure)
-                    self.setRateLimitInfoForKey(RateLimitInfo(lastExecutionDate: rateLimitInfo.lastExecutionDate, timer: timer, throttleInfo: throttleInfo), forKey: key)
+                    self.setThrottleInfoForKey(ThrottleExecutionInfo(lastExecutionDate: rateLimitInfo.lastExecutionDate, timer: timer, throttleInfo: throttleInfo), forKey: key)
                 }
             } else {
                 canExecuteClosure = true
@@ -110,15 +100,14 @@ public class RateLimit
         }
         if canExecuteClosure {
             let throttleInfo = ThrottleInfo(key: key, threshold: threshold, trailing: trailing, closure: closure)
-            self.setRateLimitInfoForKey(RateLimitInfo(lastExecutionDate: now, timer: nil, throttleInfo: throttleInfo), forKey: key)
+            self.setThrottleInfoForKey(ThrottleExecutionInfo(lastExecutionDate: now, timer: nil, throttleInfo: throttleInfo), forKey: key)
             closure()
         }
     }
 
     @objc private static func throttleTimerFired(timer: NSTimer)
     {
-        // TODO: use constant for "rateLimitInfo"
-        if let userInfo = timer.userInfo as? [String : AnyObject], rateLimitInfo = userInfo["rateLimitInfo"] as? RateLimitInfo {
+        if let userInfo = timer.userInfo as? [String : AnyObject], rateLimitInfo = userInfo["rateLimitInfo"] as? ThrottleExecutionInfo {
             self.throttle(rateLimitInfo.throttleInfo.key, threshold: rateLimitInfo.throttleInfo.threshold, trailing: rateLimitInfo.throttleInfo.trailing, closure: rateLimitInfo.throttleInfo.closure)
         }
     }
@@ -134,22 +123,20 @@ public class RateLimit
     public static func debounce(key: String, threshold: NSTimeInterval, atBegin: Bool = true, closure: ()->())
     {
         var canExecuteClosure = false
-        if let rateLimitInfo = self.rateLimitInfoForKey2(key) {
+        if let rateLimitInfo = self.debounceInfoForKey(key) {
             if let timer = rateLimitInfo.timer where timer.valid {
                 timer.invalidate()
                 let debounceInfo = DebounceInfo(key: key, threshold: threshold, atBegin: atBegin, closure: closure)
-                // TODO: use constant for "rateLimitInfo"
-                let timer = NSTimer.scheduledTimerWithTimeInterval(threshold, target: self, selector: #selector(RateLimit.throttleTimerFired2(_:)), userInfo: ["rateLimitInfo" : debounceInfo], repeats: false)
-                self.setRateLimitInfoForKey2(RateLimitInfo2(timer: timer, debounceInfo: debounceInfo), forKey: key)
+                let timer = NSTimer.scheduledTimerWithTimeInterval(threshold, target: self, selector: #selector(RateLimit.debounceTimerFired(_:)), userInfo: ["rateLimitInfo" : debounceInfo], repeats: false)
+                self.setDebounceInfoForKey(DebounceExecutionInfo(timer: timer, debounceInfo: debounceInfo), forKey: key)
 
             } else {
                 if (atBegin) {
                     canExecuteClosure = true
                 } else {
                     let debounceInfo = DebounceInfo(key: key, threshold: threshold, atBegin: atBegin, closure: closure)
-                    // TODO: use constant for "rateLimitInfo"
-                    let timer = NSTimer.scheduledTimerWithTimeInterval(threshold, target: self, selector: #selector(RateLimit.throttleTimerFired2(_:)), userInfo: ["rateLimitInfo" : debounceInfo], repeats: false)
-                    self.setRateLimitInfoForKey2(RateLimitInfo2(timer: timer, debounceInfo: debounceInfo), forKey: key)
+                    let timer = NSTimer.scheduledTimerWithTimeInterval(threshold, target: self, selector: #selector(RateLimit.debounceTimerFired(_:)), userInfo: ["rateLimitInfo" : debounceInfo], repeats: false)
+                    self.setDebounceInfoForKey(DebounceExecutionInfo(timer: timer, debounceInfo: debounceInfo), forKey: key)
                 }
             }
         } else {
@@ -157,94 +144,92 @@ public class RateLimit
                 canExecuteClosure = true
             } else {
                 let debounceInfo = DebounceInfo(key: key, threshold: threshold, atBegin: atBegin, closure: closure)
-                // TODO: use constant for "rateLimitInfo"
-                let timer = NSTimer.scheduledTimerWithTimeInterval(threshold, target: self, selector: #selector(RateLimit.throttleTimerFired2(_:)), userInfo: ["rateLimitInfo" : debounceInfo], repeats: false)
-                self.setRateLimitInfoForKey2(RateLimitInfo2(timer: timer, debounceInfo: debounceInfo), forKey: key)
+                let timer = NSTimer.scheduledTimerWithTimeInterval(threshold, target: self, selector: #selector(RateLimit.debounceTimerFired(_:)), userInfo: ["rateLimitInfo" : debounceInfo], repeats: false)
+                self.setDebounceInfoForKey(DebounceExecutionInfo(timer: timer, debounceInfo: debounceInfo), forKey: key)
             }
         }
         if canExecuteClosure {
             let debounceInfo = DebounceInfo(key: key, threshold: threshold, atBegin: atBegin, closure: closure)
-            // TODO: use constant for "rateLimitInfo"
-            let timer = NSTimer.scheduledTimerWithTimeInterval(threshold, target: self, selector: #selector(RateLimit.throttleTimerFired2(_:)), userInfo: ["rateLimitInfo" : debounceInfo], repeats: false)
-            self.setRateLimitInfoForKey2(RateLimitInfo2(timer: timer, debounceInfo: debounceInfo), forKey: key)
+            let timer = NSTimer.scheduledTimerWithTimeInterval(threshold, target: self, selector: #selector(RateLimit.debounceTimerFired(_:)), userInfo: ["rateLimitInfo" : debounceInfo], repeats: false)
+            self.setDebounceInfoForKey(DebounceExecutionInfo(timer: timer, debounceInfo: debounceInfo), forKey: key)
             closure()
         }
     }
 
-    // TODO: Rename method
-    @objc private static func throttleTimerFired2(timer: NSTimer)
+    @objc private static func debounceTimerFired(timer: NSTimer)
     {
-        // TODO: use constant for "rateLimitInfo"
         if let userInfo = timer.userInfo as? [String : AnyObject], debounceInfo = userInfo["rateLimitInfo"] as? DebounceInfo where !debounceInfo.atBegin  {
             debounceInfo.closure()
         }
     }
 
+    /**
+     Reset rate limit information for both bouncing and throlling
+     */
     public static func resetAllRateLimit()
     {
-        dispatch_sync(debounceQueue) {
-            for key in self.rateLimitDictionary.keys {
-                if let rateLimitInfo = self.rateLimitDictionary[key], let timer = rateLimitInfo.timer where timer.valid {
+        dispatch_sync(queue) {
+            for key in self.throttleExecutionDictionary.keys {
+                if let rateLimitInfo = self.throttleExecutionDictionary[key], let timer = rateLimitInfo.timer where timer.valid {
                     timer.invalidate()
                 }
-                self.rateLimitDictionary[key] = nil
+                self.throttleExecutionDictionary[key] = nil
             }
-            for key in self.rateLimitDictionary2.keys {
-                if let rateLimitInfo = self.rateLimitDictionary2[key], let timer = rateLimitInfo.timer where timer.valid {
+            for key in self.debounceExecutionDictionary.keys {
+                if let rateLimitInfo = self.debounceExecutionDictionary[key], let timer = rateLimitInfo.timer where timer.valid {
                     timer.invalidate()
                 }
-                self.rateLimitDictionary2[key] = nil
+                self.debounceExecutionDictionary[key] = nil
             }
         }
     }
 
+    /**
+     Reset rate limit information for both bouncing and throlling for a specific key
+     */
     public static func resetRateLimitForKey(key: String)
     {
-        dispatch_sync(debounceQueue) {
-            if let rateLimitInfo = self.rateLimitDictionary[key], let timer = rateLimitInfo.timer where timer.valid {
+        dispatch_sync(queue) {
+            if let rateLimitInfo = self.throttleExecutionDictionary[key], let timer = rateLimitInfo.timer where timer.valid {
                 timer.invalidate()
             }
-            self.rateLimitDictionary[key] = nil
-            if let rateLimitInfo = self.rateLimitDictionary2[key], let timer = rateLimitInfo.timer where timer.valid {
+            self.throttleExecutionDictionary[key] = nil
+            if let rateLimitInfo = self.debounceExecutionDictionary[key], let timer = rateLimitInfo.timer where timer.valid {
                 timer.invalidate()
             }
-            self.rateLimitDictionary2[key] = nil
+            self.debounceExecutionDictionary[key] = nil
         }
     }
 
-    // TODO: merge rateLimitInfoForKey with rateLimitInfoForKey2
-    private static func rateLimitInfoForKey(key: String) -> RateLimitInfo?
+    private static func throttleInfoForKey(key: String) -> ThrottleExecutionInfo?
     {
-        var rateLimitInfo: RateLimitInfo?
-        dispatch_sync(debounceQueue) {
-            rateLimitInfo = self.rateLimitDictionary[key]
+        var rateLimitInfo: ThrottleExecutionInfo?
+        dispatch_sync(queue) {
+            rateLimitInfo = self.throttleExecutionDictionary[key]
         }
         return rateLimitInfo
     }
 
-    // TODO: merge rateLimitInfoForKey with rateLimitInfoForKey2
-    private static func rateLimitInfoForKey2(key: String) -> RateLimitInfo2?
+    private static func setThrottleInfoForKey(rateLimitInfo: ThrottleExecutionInfo, forKey key: String)
     {
-        var rateLimitInfo: RateLimitInfo2?
-        dispatch_sync(debounceQueue) {
-            rateLimitInfo = self.rateLimitDictionary2[key]
+        dispatch_sync(queue) {
+            self.throttleExecutionDictionary[key] = rateLimitInfo
+        }
+    }
+
+    private static func debounceInfoForKey(key: String) -> DebounceExecutionInfo?
+    {
+        var rateLimitInfo: DebounceExecutionInfo?
+        dispatch_sync(queue) {
+            rateLimitInfo = self.debounceExecutionDictionary[key]
         }
         return rateLimitInfo
     }
 
-    // TODO: merge setRateLimitInfoForKey with setRateLimitInfoForKey2
-    private static func setRateLimitInfoForKey(rateLimitInfo: RateLimitInfo, forKey key: String)
+    private static func setDebounceInfoForKey(rateLimitInfo: DebounceExecutionInfo, forKey key: String)
     {
-        dispatch_sync(debounceQueue) {
-            self.rateLimitDictionary[key] = rateLimitInfo
-        }
-    }
-
-    // TODO: merge setRateLimitInfoForKey with setRateLimitInfoForKey2
-    private static func setRateLimitInfoForKey2(rateLimitInfo: RateLimitInfo2, forKey key: String)
-    {
-        dispatch_sync(debounceQueue) {
-            self.rateLimitDictionary2[key] = rateLimitInfo
+        dispatch_sync(queue) {
+            self.debounceExecutionDictionary[key] = rateLimitInfo
         }
     }
 }
