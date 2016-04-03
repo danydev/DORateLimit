@@ -3,3 +3,6 @@ language: objective-c
 xcode_workspace: RateLimit.xcworkspace
 xcode_scheme: RateLimit Tests
 xcode_sdk: iphonesimulator9.3
+before_script:
+# upgrade xctool because the Travis xctool version has a bug when using with Xcode 7.3
+- brew update && brew reinstall --HEAD xctool || true
