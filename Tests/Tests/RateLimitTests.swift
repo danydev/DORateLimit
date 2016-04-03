@@ -21,7 +21,7 @@ class RateLimitTests: XCTestCase {
         while((currentTimestamp - startTimestamp) < threshold - 0.5) {
             // Action: Call debounce multiple times for (threshold - 0.5) seconds
             RateLimit.debounce("debounceKey_t1", threshold: threshold) {
-                ++closureCallsCount
+                closureCallsCount += 1
             }
             currentTimestamp = NSDate().timeIntervalSince1970
         }
@@ -46,7 +46,7 @@ class RateLimitTests: XCTestCase {
         while((currentTimestamp - startTimestamp) < threshold + 0.5) {
             // Action: Call debounce multiple times for (threshold + 0.5) seconds
             RateLimit.debounce("debounceKey_t2", threshold: threshold) {
-                ++closureCallsCount
+                closureCallsCount += 1
             }
             currentTimestamp = NSDate().timeIntervalSince1970
         }
@@ -69,7 +69,7 @@ class RateLimitTests: XCTestCase {
 
         let callThrottle = {
             RateLimit.debounce("debounceKey_t3", threshold: threshold) {
-                ++closureCallsCount
+                closureCallsCount += 1
             }
         }
 
@@ -96,7 +96,7 @@ class RateLimitTests: XCTestCase {
 
         // Action: debounce with atBegin false
         RateLimit.debounce("debounceKey_t4", threshold: threshold, atBegin: false) {
-            ++closureCallsCount
+            closureCallsCount += 1
         }
 
         // Expectation: Closure should have NOT been called at this time
@@ -118,7 +118,7 @@ class RateLimitTests: XCTestCase {
 
         // Action: debounce with atBegin true
         RateLimit.debounce("debounceKey_t5", threshold: threshold) {
-            ++closureCallsCount
+            closureCallsCount += 1
         }
 
         // Expectation: Closure should have been immediately called
@@ -132,10 +132,10 @@ class RateLimitTests: XCTestCase {
 
         // Action: call debounce twice with different keys
         RateLimit.debounce("debounceKey_t6_1", threshold: threshold) {
-            ++closureCallsCount
+            closureCallsCount += 1
         }
         RateLimit.debounce("debounceKey_t6_2", threshold: threshold) {
-            ++closureCallsCount
+            closureCallsCount += 1
         }
 
         // Expectation: Closure should have been called 1 time each
@@ -153,7 +153,7 @@ class RateLimitTests: XCTestCase {
         while((currentTimestamp - startTimestamp) < threshold - 0.5) {
             // Action: Call throttle multiple times for (threshold - 0.5) seconds
             RateLimit.throttle("throttleKey_t1", threshold: threshold) {
-                ++closureCallsCount
+                closureCallsCount += 1
             }
             currentTimestamp = NSDate().timeIntervalSince1970
         }
@@ -178,7 +178,7 @@ class RateLimitTests: XCTestCase {
         while((currentTimestamp - startTimestamp) < threshold + 0.5) {
             // Action: Call throttle continuosly for (threshold + 0.5) seconds
             RateLimit.throttle("throttleKey_t2", threshold: threshold) {
-                ++closureCallsCount
+                closureCallsCount += 1
             }
             currentTimestamp = NSDate().timeIntervalSince1970
         }
@@ -201,7 +201,7 @@ class RateLimitTests: XCTestCase {
 
         let callThrottle = {
             RateLimit.throttle("throttleKey_t3", threshold: threshold) {
-                ++closureCallsCount
+                closureCallsCount += 1
             }
         }
 
@@ -229,7 +229,7 @@ class RateLimitTests: XCTestCase {
         // Action: Call throttle twice
         for _ in 1...2 {
             RateLimit.throttle("throttleKey_t4", threshold: threshold, trailing: true) {
-                ++closureCallsCount
+                closureCallsCount += 1
             }
         }
 
@@ -255,7 +255,7 @@ class RateLimitTests: XCTestCase {
         // Action: Call throttle twice
         for _ in 1...2 {
             RateLimit.throttle("throttleKey_t5", threshold: threshold) {
-                ++closureCallsCount
+                closureCallsCount += 1
             }
         }
 
@@ -278,10 +278,10 @@ class RateLimitTests: XCTestCase {
 
         // Action: call debounce twice with different keys
         RateLimit.throttle("throttleKey_t6_1", threshold: threshold) {
-            ++closureCallsCount
+            closureCallsCount += 1
         }
         RateLimit.throttle("throttleKey_t6_2", threshold: threshold) {
-            ++closureCallsCount
+            closureCallsCount += 1
         }
 
         // Expectation: Closure should have been called 1 time each

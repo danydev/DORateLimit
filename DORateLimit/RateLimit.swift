@@ -98,7 +98,7 @@ public class RateLimit
             let timeDifference = rateLimitInfo.lastExecutionDate.timeIntervalSinceDate(now)
             if timeDifference < 0 && fabs(timeDifference) < threshold {
                 if trailing && rateLimitInfo.timer == nil {
-                    let timer = NSTimer.scheduledTimerWithTimeInterval(threshold, target: self, selector: "throttleTimerFired:", userInfo: ["rateLimitInfo" : rateLimitInfo], repeats: false)
+                    let timer = NSTimer.scheduledTimerWithTimeInterval(threshold, target: self, selector: #selector(RateLimit.throttleTimerFired(_:)), userInfo: ["rateLimitInfo" : rateLimitInfo], repeats: false)
                     let throttleInfo = ThrottleInfo(key: key, threshold: threshold, trailing: trailing, closure: closure)
                     self.setRateLimitInfoForKey(RateLimitInfo(lastExecutionDate: rateLimitInfo.lastExecutionDate, timer: timer, throttleInfo: throttleInfo), forKey: key)
                 }
@@ -139,7 +139,7 @@ public class RateLimit
                 timer.invalidate()
                 let debounceInfo = DebounceInfo(key: key, threshold: threshold, atBegin: atBegin, closure: closure)
                 // TODO: use constant for "rateLimitInfo"
-                let timer = NSTimer.scheduledTimerWithTimeInterval(threshold, target: self, selector: "throttleTimerFired2:", userInfo: ["rateLimitInfo" : debounceInfo], repeats: false)
+                let timer = NSTimer.scheduledTimerWithTimeInterval(threshold, target: self, selector: #selector(RateLimit.throttleTimerFired2(_:)), userInfo: ["rateLimitInfo" : debounceInfo], repeats: false)
                 self.setRateLimitInfoForKey2(RateLimitInfo2(timer: timer, debounceInfo: debounceInfo), forKey: key)
 
             } else {
@@ -148,7 +148,7 @@ public class RateLimit
                 } else {
                     let debounceInfo = DebounceInfo(key: key, threshold: threshold, atBegin: atBegin, closure: closure)
                     // TODO: use constant for "rateLimitInfo"
-                    let timer = NSTimer.scheduledTimerWithTimeInterval(threshold, target: self, selector: "throttleTimerFired2:", userInfo: ["rateLimitInfo" : debounceInfo], repeats: false)
+                    let timer = NSTimer.scheduledTimerWithTimeInterval(threshold, target: self, selector: #selector(RateLimit.throttleTimerFired2(_:)), userInfo: ["rateLimitInfo" : debounceInfo], repeats: false)
                     self.setRateLimitInfoForKey2(RateLimitInfo2(timer: timer, debounceInfo: debounceInfo), forKey: key)
                 }
             }
@@ -158,14 +158,14 @@ public class RateLimit
             } else {
                 let debounceInfo = DebounceInfo(key: key, threshold: threshold, atBegin: atBegin, closure: closure)
                 // TODO: use constant for "rateLimitInfo"
-                let timer = NSTimer.scheduledTimerWithTimeInterval(threshold, target: self, selector: "throttleTimerFired2:", userInfo: ["rateLimitInfo" : debounceInfo], repeats: false)
+                let timer = NSTimer.scheduledTimerWithTimeInterval(threshold, target: self, selector: #selector(RateLimit.throttleTimerFired2(_:)), userInfo: ["rateLimitInfo" : debounceInfo], repeats: false)
                 self.setRateLimitInfoForKey2(RateLimitInfo2(timer: timer, debounceInfo: debounceInfo), forKey: key)
             }
         }
         if canExecuteClosure {
             let debounceInfo = DebounceInfo(key: key, threshold: threshold, atBegin: atBegin, closure: closure)
             // TODO: use constant for "rateLimitInfo"
-            let timer = NSTimer.scheduledTimerWithTimeInterval(threshold, target: self, selector: "throttleTimerFired2:", userInfo: ["rateLimitInfo" : debounceInfo], repeats: false)
+            let timer = NSTimer.scheduledTimerWithTimeInterval(threshold, target: self, selector: #selector(RateLimit.throttleTimerFired2(_:)), userInfo: ["rateLimitInfo" : debounceInfo], repeats: false)
             self.setRateLimitInfoForKey2(RateLimitInfo2(timer: timer, debounceInfo: debounceInfo), forKey: key)
             closure()
         }
