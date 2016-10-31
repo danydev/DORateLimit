@@ -14,50 +14,50 @@ class RateLimitTests: XCTestCase {
     {
         let threshold = 1.0
         var closureCallsCount = 0
-        let readyExpectation = expectationWithDescription("ready")
+        let readyExpectation = expectation(description: "ready")
 
-        let startTimestamp = NSDate().timeIntervalSince1970
-        var currentTimestamp = NSDate().timeIntervalSince1970
+        let startTimestamp = Date().timeIntervalSince1970
+        var currentTimestamp = Date().timeIntervalSince1970
         while((currentTimestamp - startTimestamp) < threshold - 0.5) {
             // Action: Call debounce multiple times for (threshold - 0.5) seconds
             RateLimit.debounce("debounceKey_t1", threshold: threshold) {
                 closureCallsCount += 1
             }
-            currentTimestamp = NSDate().timeIntervalSince1970
+            currentTimestamp = Date().timeIntervalSince1970
         }
 
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64((threshold + 0.5) * Double(NSEC_PER_SEC))), dispatch_get_main_queue()) {
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Double(Int64((threshold + 0.5) * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)) {
             // Expectation: The closure has been called just 1 time
             XCTAssertEqual(1, closureCallsCount)
             readyExpectation.fulfill()
         }
 
-        waitForExpectationsWithTimeout(5, handler: nil)
+        waitForExpectations(timeout: 5, handler: nil)
     }
 
     func testDebounceTriggersOnceWhenContinuoslyCalledAfterThreshold()
     {
         let threshold = 1.0
         var closureCallsCount = 0
-        let readyExpectation = expectationWithDescription("ready")
+        let readyExpectation = expectation(description: "ready")
 
-        let startTimestamp = NSDate().timeIntervalSince1970
-        var currentTimestamp = NSDate().timeIntervalSince1970
+        let startTimestamp = Date().timeIntervalSince1970
+        var currentTimestamp = Date().timeIntervalSince1970
         while((currentTimestamp - startTimestamp) < threshold + 0.5) {
             // Action: Call debounce multiple times for (threshold + 0.5) seconds
             RateLimit.debounce("debounceKey_t2", threshold: threshold) {
                 closureCallsCount += 1
             }
-            currentTimestamp = NSDate().timeIntervalSince1970
+            currentTimestamp = Date().timeIntervalSince1970
         }
 
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64((threshold + 0.5) * Double(NSEC_PER_SEC))), dispatch_get_main_queue()) {
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Double(Int64((threshold + 0.5) * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)) {
             // Expectation: The closure has been called just 1 time
             XCTAssertEqual(1, closureCallsCount)
             readyExpectation.fulfill()
         }
 
-        waitForExpectationsWithTimeout(5, handler: nil)
+        waitForExpectations(timeout: 5, handler: nil)
     }
 
     func testDebounceTriggersWhenCalledAfterThreshold()
@@ -65,7 +65,7 @@ class RateLimitTests: XCTestCase {
         let threshold = 1.0
         var closureCallsCount = 0
 
-        let readyExpectation = expectationWithDescription("ready")
+        let readyExpectation = expectation(description: "ready")
 
         let callThrottle = {
             RateLimit.debounce("debounceKey_t3", threshold: threshold) {
@@ -77,14 +77,14 @@ class RateLimitTests: XCTestCase {
         callThrottle()
 
         // Action: Call again the closure after *waiting* (threshold + 0.5) seconds
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64((threshold + 0.5) * Double(NSEC_PER_SEC))), dispatch_get_main_queue()) {
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Double(Int64((threshold + 0.5) * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)) {
             callThrottle()
             // Expectation: The closure has been called 2 times
             XCTAssertEqual(2, closureCallsCount)
             readyExpectation.fulfill()
         }
 
-        waitForExpectationsWithTimeout(5, handler: nil)
+        waitForExpectations(timeout: 5, handler: nil)
     }
 
     func testDebounceRespectsTriggerAtBeginDisabled()
@@ -92,7 +92,7 @@ class RateLimitTests: XCTestCase {
         let threshold = 1.0
         var closureCallsCount = 0
 
-        let readyExpectation = expectationWithDescription("ready")
+        let readyExpectation = expectation(description: "ready")
 
         // Action: debounce with atBegin false
         RateLimit.debounce("debounceKey_t4", threshold: threshold, atBegin: false) {
@@ -102,13 +102,13 @@ class RateLimitTests: XCTestCase {
         // Expectation: Closure should have NOT been called at this time
         XCTAssertEqual(0, closureCallsCount)
 
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64((threshold + 0.5) * Double(NSEC_PER_SEC))), dispatch_get_main_queue()) {
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Double(Int64((threshold + 0.5) * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)) {
             // Expectation: After (threshold + 0.5) seconds, the closure has been called
             XCTAssertEqual(1, closureCallsCount)
             readyExpectation.fulfill()
         }
 
-        waitForExpectationsWithTimeout(5, handler: nil)
+        waitForExpectations(timeout: 5, handler: nil)
     }
 
     func testDebounceRespectsTriggerAtBeginEnabled()
@@ -146,50 +146,50 @@ class RateLimitTests: XCTestCase {
     {
         let threshold = 1.0
         var closureCallsCount = 0
-        let readyExpectation = expectationWithDescription("ready")
+        let readyExpectation = expectation(description: "ready")
 
-        let startTimestamp = NSDate().timeIntervalSince1970
-        var currentTimestamp = NSDate().timeIntervalSince1970
+        let startTimestamp = Date().timeIntervalSince1970
+        var currentTimestamp = Date().timeIntervalSince1970
         while((currentTimestamp - startTimestamp) < threshold - 0.5) {
             // Action: Call throttle multiple times for (threshold - 0.5) seconds
             RateLimit.throttle("throttleKey_t1", threshold: threshold) {
                 closureCallsCount += 1
             }
-            currentTimestamp = NSDate().timeIntervalSince1970
+            currentTimestamp = Date().timeIntervalSince1970
         }
 
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64((threshold + 0.5) * Double(NSEC_PER_SEC))), dispatch_get_main_queue()) {
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Double(Int64((threshold + 0.5) * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)) {
             // Expectation: The closure has been called 1 time
             XCTAssertEqual(1, closureCallsCount)
             readyExpectation.fulfill()
         }
 
-        waitForExpectationsWithTimeout(5, handler: nil)
+        waitForExpectations(timeout: 5, handler: nil)
     }
 
     func testThrottleTriggersWhenContinuoslyCalledAfterThreshold()
     {
         let threshold = 1.0
         var closureCallsCount = 0
-        let readyExpectation = expectationWithDescription("ready")
+        let readyExpectation = expectation(description: "ready")
 
-        let startTimestamp = NSDate().timeIntervalSince1970
-        var currentTimestamp = NSDate().timeIntervalSince1970
+        let startTimestamp = Date().timeIntervalSince1970
+        var currentTimestamp = Date().timeIntervalSince1970
         while((currentTimestamp - startTimestamp) < threshold + 0.5) {
             // Action: Call throttle continuosly for (threshold + 0.5) seconds
             RateLimit.throttle("throttleKey_t2", threshold: threshold) {
                 closureCallsCount += 1
             }
-            currentTimestamp = NSDate().timeIntervalSince1970
+            currentTimestamp = Date().timeIntervalSince1970
         }
 
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64((threshold + 0.5) * Double(NSEC_PER_SEC))), dispatch_get_main_queue()) {
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Double(Int64((threshold + 0.5) * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)) {
             // Expectation: Closure should have been called 2 times
             XCTAssertEqual(2, closureCallsCount)
             readyExpectation.fulfill()
         }
 
-        waitForExpectationsWithTimeout(5, handler: nil)
+        waitForExpectations(timeout: 5, handler: nil)
     }
 
     func testThrottleAllowsTriggerAfterThreshold()
@@ -197,7 +197,7 @@ class RateLimitTests: XCTestCase {
         let threshold = 1.0
         var closureCallsCount = 0
 
-        let readyExpectation = expectationWithDescription("ready")
+        let readyExpectation = expectation(description: "ready")
 
         let callThrottle = {
             RateLimit.throttle("throttleKey_t3", threshold: threshold) {
@@ -209,14 +209,14 @@ class RateLimitTests: XCTestCase {
         callThrottle()
 
         // Action: Call again the closure after *waiting* (threshold + 0.5) seconds
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64((threshold + 0.5) * Double(NSEC_PER_SEC))), dispatch_get_main_queue()) {
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Double(Int64((threshold + 0.5) * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)) {
             callThrottle()
             // Expectation: The closure has been called 2 times
             XCTAssertEqual(2, closureCallsCount)
             readyExpectation.fulfill()
         }
 
-        waitForExpectationsWithTimeout(5, handler: nil)
+        waitForExpectations(timeout: 5, handler: nil)
     }
 
     func testThrottleRespectsTrailingEnabled()
@@ -224,7 +224,7 @@ class RateLimitTests: XCTestCase {
         let threshold = 1.0
         var closureCallsCount = 0
 
-        let readyExpectation = expectationWithDescription("ready")
+        let readyExpectation = expectation(description: "ready")
 
         // Action: Call throttle twice
         for _ in 1...2 {
@@ -236,13 +236,13 @@ class RateLimitTests: XCTestCase {
         // Expectation: Closure should have been called 1 time at this point
         XCTAssertEqual(1, closureCallsCount)
 
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64((threshold + 0.5) * Double(NSEC_PER_SEC))), dispatch_get_main_queue()) {
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Double(Int64((threshold + 0.5) * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)) {
             // Expectation: Trailing is enabled, that means that another trailing closure trigger should have been performed at this point
             XCTAssertEqual(2, closureCallsCount)
             readyExpectation.fulfill()
         }
 
-        waitForExpectationsWithTimeout(5, handler: nil)
+        waitForExpectations(timeout: 5, handler: nil)
     }
 
     func testThrottleRespectsTrailingDisabled()
@@ -250,7 +250,7 @@ class RateLimitTests: XCTestCase {
         let threshold = 1.0
         var closureCallsCount = 0
 
-        let readyExpectation = expectationWithDescription("ready")
+        let readyExpectation = expectation(description: "ready")
 
         // Action: Call throttle twice
         for _ in 1...2 {
@@ -262,13 +262,13 @@ class RateLimitTests: XCTestCase {
         // Expectation: The closure has been already called 1 time at this point
         XCTAssertEqual(1, closureCallsCount)
 
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64((threshold + 0.5) * Double(NSEC_PER_SEC))), dispatch_get_main_queue()) {
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Double(Int64((threshold + 0.5) * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)) {
             // Expectation: Trailing is disabled, the closure should haven't been called more than once
             XCTAssertEqual(1, closureCallsCount)
             readyExpectation.fulfill()
         }
 
-        waitForExpectationsWithTimeout(5, handler: nil)
+        waitForExpectations(timeout: 5, handler: nil)
     }
 
     func testThrottleRespectsDifferentKeys()
