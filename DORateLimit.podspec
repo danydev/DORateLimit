@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name = "DORateLimit"
-  s.version = "0.1.4"
+  s.version = "0.1.5"
   s.summary = "Rate limit your functions with throttling and debouncing"
   s.homepage = "https://github.com/danydev/DORateLimit"
   s.license = { :type => 'MIT', :file => 'LICENSE' }
