@@ -1,8 +1,10 @@
-osx_image: xcode7.3
+osx_image: xcode8
 language: objective-c
-xcode_workspace: RateLimit.xcworkspace
-xcode_scheme: RateLimit Tests
-xcode_sdk: iphonesimulator9.3
+script:
+- xcodebuild -workspace RateLimit.xcworkspace -scheme RateLimit\ Tests -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone SE' test | xcpretty && exit ${PIPESTATUS[0]}
 before_script:
-# upgrade xctool because the Travis xctool version has a bug when using with Xcode 7.3
-- brew update && brew reinstall --HEAD xctool || true
+- gem install xcpretty
+after_success:
+# Workaround to random travis CI failure
+# See https://github.com/travis-ci/travis-ci/issues/4725
+ - sleep 5
