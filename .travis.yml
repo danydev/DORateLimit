@@ -1,4 +1,4 @@
-osx_image: xcode8
+osx_image: xcode9
 language: objective-c
 script:
 - xcodebuild -workspace RateLimit.xcworkspace -scheme RateLimit\ Tests -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone SE' test | xcpretty && exit ${PIPESTATUS[0]}
