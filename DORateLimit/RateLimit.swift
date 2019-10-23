@@ -80,7 +80,7 @@ open class RateLimit
     - parameter trailing:
     - parameter closure:
     */
-    open static func throttle(_ key: String, threshold: TimeInterval, trailing: Bool = false, closure: @escaping ()->())
+    public static func throttle(_ key: String, threshold: TimeInterval, trailing: Bool = false, closure: @escaping ()->())
     {
         let now = Date()
         var canExecuteClosure = false
@@ -120,7 +120,7 @@ open class RateLimit
     - parameter atBegin:
     - parameter closure:
     */
-    open static func debounce(_ key: String, threshold: TimeInterval, atBegin: Bool = true, closure: @escaping ()->())
+    public static func debounce(_ key: String, threshold: TimeInterval, atBegin: Bool = true, closure: @escaping ()->())
     {
         var canExecuteClosure = false
         if let rateLimitInfo = self.debounceInfoForKey(key) {
@@ -166,7 +166,7 @@ open class RateLimit
     /**
      Reset rate limit information for both bouncing and throlling
      */
-    open static func resetAllRateLimit()
+    public static func resetAllRateLimit()
     {
         queue.sync {
             for key in self.throttleExecutionDictionary.keys {
@@ -187,7 +187,7 @@ open class RateLimit
     /**
      Reset rate limit information for both bouncing and throlling for a specific key
      */
-    open static func resetRateLimitForKey(_ key: String)
+    public static func resetRateLimitForKey(_ key: String)
     {
         queue.sync {
             if let rateLimitInfo = self.throttleExecutionDictionary[key], let timer = rateLimitInfo.timer, timer.isValid {
